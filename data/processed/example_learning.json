@@ -1,0 +1,53 @@
+[
+    {
+        "truck_id": 1,
+        "maintenance_location_id": 123,
+        "available_for_swapping": false,
+        "tires": [
+            {"position": "steer", "health": 0.50},
+            {"position": "steer", "health": 0.82},
+            {"position": "drive", "health": 0.75},
+            {"position": "drive", "health": 0.70},
+            {"position": "drive", "health": 0.90},
+            {"position": "drive", "health": 0.60},
+            {"position": "rear", "health": 0.55},
+            {"position": "rear", "health": 0.50},
+            {"position": "rear", "health": 0.45},
+            {"position": "rear", "health": 0.40}
+        ]
+    },
+    {
+        "truck_id": 2,
+        "maintenance_location_id": 123,
+        "available_for_swapping": true,
+        "tires": [
+            {"position": "steer", "health": 0.5},
+            {"position": "steer", "health": 0.84},
+            {"position": "drive", "health": 0.79},
+            {"position": "drive", "health": 0.73},
+            {"position": "drive", "health": 0.68},
+            {"position": "drive", "health": 0.63},
+            {"position": "rear", "health": 0.58},
+            {"position": "rear", "health": 0.53},
+            {"position": "rear", "health": 0.48},
+            {"position": "rear", "health": 0.43}
+        ]
+    },
+    {
+        "truck_id": 3,
+        "maintenance_location_id": 123,
+        "available_for_swapping": true,
+        "tires": [
+            {"position": "steer", "health": 0.88},
+            {"position": "steer", "health": 0.84},
+            {"position": "drive", "health": 0.79},
+            {"position": "drive", "health": 0.73},
+            {"position": "drive", "health": 0.68},
+            {"position": "drive", "health": 0.63},
+            {"position": "rear", "health": 0.58},
+            {"position": "rear", "health": 0.53},
+            {"position": "rear", "health": 0.48},
+            {"position": "rear", "health": 0.43}
+        ]
+    }
+]
