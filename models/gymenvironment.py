@@ -21,7 +21,7 @@ class TireManagementEnv(gym.Env):
 
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, trucks_data, max_trucks=10):
+    def __init__(self, max_trucks=10):
         
         super(TireManagementEnv, self).__init__()
 
@@ -38,7 +38,7 @@ class TireManagementEnv(gym.Env):
         # When the action type is 1 (replace a tire): Only the truck selection is relevant. The third dimension (selecting the tire for switching) will be ignored.
         # When the action type is 2 (switch tire positions): All three dimensions are relevant, the agent must decide the truck and the specific rear or drive 
         # tire to swap with the steer tire.
-        self.action_space = spaces.MultiDiscrete([self.max_trucks, 2, 8])
+        self.action_space = spaces.MultiDiscrete([self.max_trucks, 3, 8])
 
         # Observation Space shape=(self.max_trucks, 10): defines the shape of the array that represents the observation space. It is set to have 
         # self.max_trucks rows and 10 columns. Each row corresponds to a truck, and each of the 10 columns corresponds to the tire positions on that truck. 
