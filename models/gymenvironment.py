@@ -4,28 +4,60 @@ import numpy as np
 
 class TireManagementEnv(gym.Env):
     """
-    Custom Environment for managing tire health across a fleet of trucks.
+    Custom Environment for an RL agent that will make tire rotations decision across a fleet of trucks. 
+    
+    The goal of the agent is to maximize the steer tire health measured over a cummulative weighted average of the tire RCP's of all trucks part of the episode. 
+    
+    The agent has 3 possible actions - install a new tire (all new tires are assigned to the lowest steer positions and the old tire is cascaded down),  
+    swap tires within the same truck, or do nothing. 
+    (There is a future experiment to swap tires between trucks not part of the current code.) 
+    
+    The episode ends when <TO BE DEFINED>
+
+    Before each episode the agent is reset with new truck data with no correlation to the previous episode. The count of trucks in each episode may vary, 
+    but the action and observation space is set constant with a max_truck limit. 
+
     """
+
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, trucks_data):
+    def __init__(self, trucks_data, max_trucks=10):
+        
         super(TireManagementEnv, self).__init__()
-        self.trucks_data = trucks_data  # Data containing truck tire information
-        self.n_trucks = len(trucks_data)
-        self.num_tires_per_truck = 10  # Assuming each truck has 10 tires
 
-        # Define action space
-        # Actions are represented as tuples (truck_id, tire_index, action_type)
-        # action_type: 0 = no action, 1 = replace with new, 2 = swap within truck
-        self.action_space = spaces.MultiDiscrete([self.n_trucks, self.num_tires_per_truck, 3])
+        self.current_num_trucks = None
+        self.state = None
+        
+        # Defines the capacity of the maintenance location so as to keep the action space constant as DQN cannot handle dynamic. If current number of trucks are lesser 
+        # than max_trucks the step function will be modified with a Maximum Limit with Masking to handle the empty action/observation space.
 
-        # Define observation space (health of each tire)
-        low = np.zeros(self.n_trucks * self.num_tires_per_truck)
-        high = np.ones(self.n_trucks * self.num_tires_per_truck)
-        self.observation_space = spaces.Box(low, high, dtype=np.float32)
+        self.max_trucks = max_trucks
 
-        # Initialize state
-        self.state = self.initialize_state()
+        # Action space: [Select Truck (0 to max_trucks-1), Action Type (0 or 1), Select Tire Position (0 to 7) for swapping]
+        # When the action type is 0 (do nothing): the agent will perform no action, the third dimension will be ingnored.
+        # When the action type is 1 (replace a tire): Only the truck selection is relevant. The third dimension (selecting the tire for switching) will be ignored.
+        # When the action type is 2 (switch tire positions): All three dimensions are relevant, the agent must decide the truck and the specific rear or drive 
+        # tire to swap with the steer tire.
+        self.action_space = spaces.MultiDiscrete([self.max_trucks, 2, 8])
+
+        # Observation Space shape=(self.max_trucks, 10): defines the shape of the array that represents the observation space. It is set to have 
+        # self.max_trucks rows and 10 columns. Each row corresponds to a truck, and each of the 10 columns corresponds to the tire positions on that truck. 
+        self.observation_space = spaces.Box(low=0, high=1, shape=(self.max_trucks, 10), dtype=np.float32)
+
+    def reset(self, initial_state):
+        
+        # The 'initial_state' should be a (n, 10) array where 'n' is the number of trucks in the current episode.
+        
+        if initial_state.shape[1] != 10:
+            raise ValueError("Each truck must have exactly 10 tires.")
+        
+        self.state = initial_state
+        
+        # Pad the state array for non-existent trucks if fewer trucks are provided
+        if initial_state.shape[0] < self.max_trucks:
+            padding = np.zeros((self.max_trucks - initial_state.shape[0], 10))
+            self.state = np.vstack([self.state, padding])
+        return self.state
 
     def step(self, action):
         truck_id, tire_idx, action_type = action
@@ -41,9 +73,6 @@ class TireManagementEnv(gym.Env):
 
         return np.array(self.state), reward, done, info
 
-    def reset(self):
-        self.state = self.initialize_state()
-        return np.array(self.state)
 
     def render(self, mode='human'):
         # Optional: Print current tire health for visualization
@@ -86,33 +115,21 @@ class TireManagementEnv(gym.Env):
         # Determine if the episode should end
         return False
 
-    def initialize_state(self):
-        # Initialize the state from trucks_data
-        return [tire['health'] for truck in self.trucks_data for tire in truck['tires']]
+    # def initialize_state(self):
+    #     # Initialize the state from trucks_data
+    #     return [tire['health'] for truck in self.trucks_data for tire in truck['tires']]
 
-    def get_state(self):
-        # Update the state from trucks_data
-        return [tire['health'] for truck in self.trucks_data for tire in truck['tires']]
+    # def get_state(self):
+    #     # Update the state from trucks_data
+    #     return [tire['health'] for truck in self.trucks_data for tire in truck['tires']]
 
-# Example data (simplified for clarity)
-trucks_data = [
-    {
-        "truck_id": 1,
-        "maintenance_location_id": 123,
-        "available_for_swapping": False,
-        "tires": [{"position": "steer", "health": 0.8}, {"position": "drive", "health": 0.7}, {"position": "rear", "health": 0.6}]
-    },
-    # Add more trucks as needed
-]
-
-env = TireManagementEnv(trucks_data=trucks_data)
-state = env.reset()
-done = False
-
-while not done:
-    action = env.action_space.sample()  # Randomly sample an action
-    next_state, reward, done, info = env.step(action)
-    if done:
-        break
-
-env.close()
+# # Example data (simplified for clarity)
+# trucks_data = [
+#     {
+#         "truck_id": 1,
+#         "maintenance_location_id": 123,
+#         "available_for_swapping": False,
+#         "tires": [{"position": "steer", "health": 0.8}, {"position": "drive", "health": 0.7}, {"position": "rear", "health": 0.6}]
+#     },
+#     # Add more trucks as needed
+# ]
