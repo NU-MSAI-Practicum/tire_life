@@ -30,33 +30,46 @@ class TireManagementEnv(gym.Env):
         
         # Defines the capacity of the maintenance location so as to keep the action space constant as DQN cannot handle dynamic. If current number of trucks are lesser 
         # than max_trucks the step function will be modified with a Maximum Limit with Masking to handle the empty action/observation space.
-
         self.max_trucks = max_trucks
 
-        # Action space: [Select Truck (0 to max_trucks-1), Action Type (0 or 1), Select Tire Position (0 to 7) for swapping]
-        # When the action type is 0 (do nothing): the agent will perform no action, the third dimension will be ingnored.
-        # When the action type is 1 (replace a tire): Only the truck selection is relevant. The third dimension (selecting the tire for switching) will be ignored.
-        # When the action type is 2 (switch tire positions): All three dimensions are relevant, the agent must decide the truck and the specific rear or drive 
-        # tire to swap with the steer tire.
-        self.action_space = spaces.MultiDiscrete([self.max_trucks, 3, 8])
+        # Action space: [Select Action Type (0 or 1), Truck (0 to max_trucks-1), Select Steer Tire Position (0 to 1), Select Rear/Drive Tire Position (0 to 7)]
+        # When the action type is 0 (do nothing): the agent will perform no action.
+        # When the action type is 1 (replace a tire): All dimension are relevant - (action_type, truck ID, steer pos to receive new tire, rear/drive pos to receive old tire)
+        # When the action type is 2 (switch tire positions): All dimension are relevant - (action_type, truck ID, steer pos for rear/drive tire, rear/drive pos for steer tire)
+        self.action_space = spaces.MultiDiscrete([3, self.max_trucks, 2, 8])
 
-        # Observation Space shape=(self.max_trucks, 10): defines the shape of the array that represents the observation space. It is set to have 
-        # self.max_trucks rows and 10 columns. Each row corresponds to a truck, and each of the 10 columns corresponds to the tire positions on that truck. 
-        self.observation_space = spaces.Box(low=0, high=1, shape=(self.max_trucks, 10), dtype=np.float32)
+        # Observation Space shape=(self.max_trucks, 10): defined as a tuple. eg. (0, array([0.03633198, 0.42370757], dtype=float32)). The Discrete type holds the truck IDs
+        # followed by a Box array of size 10 in range 0 to 1 to represent tireRCPs.
+        self.observation_space = spaces.Tuple((
+            spaces.Discrete(self.max_trucks),  # to represent truck IDs
+            spaces.Box(low=0, high=1, shape=(self.max_trucks, 10), dtype=np.float32) # to represent tire RCPs
+        ))
 
-    def reset(self, initial_state):
+    def reset(self, truck_ids, tire_rcps):
+
+        """
+        Reset the environment with externally provided truck IDs and tire RCP values at the beginning of each episode.
+        Args:
+            truck_ids (array-like): Array of truck IDs.
+            tire_rcps (2D array-like): Array where each row corresponds to the RCPs of the tires on a truck.
+    
+         Returns:
+            tuple: The initial state of the environment, consisting of truck IDs and their tire RCPs.
+        """
+
+        if len(truck_ids) != tire_rcps.shape[0]:
+            raise ValueError("The number of truck IDs must match the number of rows in tire RCPs.")
         
-        # The 'initial_state' should be a (n, 10) array where 'n' is the number of trucks in the current episode.
+        self.current_num_trucks = len(truck_ids)  # Update the current number of trucks
+
+        truck_ids_padded = -1 * np.ones(self.max_trucks, dtype=np.int32)  # Use -1 to indicate no truck
+        tire_rcps_padded = np.zeros((self.max_trucks, 10))
+
+        truck_ids_padded[:self.current_num_trucks] = truck_ids
+        tire_rcps_padded[:self.current_num_trucks, :] = tire_rcps
+
+        self.state = (truck_ids_padded, tire_rcps_padded)
         
-        if initial_state.shape[1] != 10:
-            raise ValueError("Each truck must have exactly 10 tires.")
-        
-        self.state = initial_state
-        
-        # Pad the state array for non-existent trucks if fewer trucks are provided
-        if initial_state.shape[0] < self.max_trucks:
-            padding = np.zeros((self.max_trucks - initial_state.shape[0], 10))
-            self.state = np.vstack([self.state, padding])
         return self.state
 
     def step(self, action):
