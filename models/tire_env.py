@@ -36,18 +36,26 @@ class TireOptimizationEnv(gym.Env):
             done = True  # Optimal state reached
             reward += 100
             return self.state, reward, done, {'actions_taken': actions_taken}
+        elif action == 0 and not done:  # No action
+            reward -= 50
 
-        if action == 1 and not done:  # Replace steer tires if needed
+        elif action == 1 and not done:  # Replace steer tires if needed
             sorted_indexes = np.argsort(other_tires)
             max_idx1, max_idx2 = sorted_indexes[-1], sorted_indexes[-2]
             best_tires = [other_tires[max_idx1], other_tires[max_idx2]]
-            if best_tires[0] > steer_left or best_tires[1] > steer_right:
-                if best_tires[0] > steer_left:
-                    actions_taken.append(f"{tire_positions[max_idx1 + 2]} to steer_left")
-                    steer_left = best_tires[0]
-                if best_tires[1] > steer_right:
-                    actions_taken.append(f"{tire_positions[max_idx2 + 2]} to steer_right")
-                    steer_right = best_tires[1]
+            changed = False
+
+            if best_tires[0] > steer_left:
+                actions_taken.append(f"{tire_positions[max_idx1 + 2]} swapped with steer_left")
+                other_tires[max_idx1], steer_left = steer_left, best_tires[0]  # Swap values
+                changed = True
+
+            if best_tires[1] > steer_right:
+                actions_taken.append(f"{tire_positions[max_idx2 + 2]} swapped with steer_right")
+                other_tires[max_idx2], steer_right = steer_right, best_tires[1]  # Swap values
+                changed = True
+
+            if changed:
                 reward += 50
             else:
                 reward -= 10  # Penalty for ineffective action
