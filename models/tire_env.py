@@ -90,10 +90,6 @@ def main():
             state, reward, done, info = env.step(action)
             env.render()
         
-        # # After the loop ends, print the final state and any final actions taken
-        # print("Final state for episode {}: {}".format(episode, state))
-        # if info['actions_taken']:
-        #     print("Final actions taken:", info['actions_taken'])
 
 
 if __name__ == "__main__":
