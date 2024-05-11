@@ -16,7 +16,6 @@ class TireOptimizationEnv(gym.Env):
         self.observation_space = spaces.Box(low=0, high=1, shape=(10,), dtype=np.float32)
         self.actions_taken = []  # Initialize an empty list to store actions
 
-
     def reset(self):
         self.state = self.df.iloc[self.current_step].values[1:]
         self.current_truck_id = self.df.iloc[self.current_step].values[0]
@@ -32,7 +31,7 @@ class TireOptimizationEnv(gym.Env):
         # Current tire states
         steer_left, steer_right = self.state[0], self.state[1]
         other_tires = self.state[2:]
-        tire_positions = ['steertireleft', 'steertireright', 'drive1tireleft', 'drive1tireright', 'drive2tireleft', 'drive2tireright', 'rear1tireleft', 'rear1tireright', 'rear2tireleft', 'rear2tireright']
+        tire_positions = self.df.columns[1:]
 
         # Calculate penalty for inaction based on tire conditions
         if action == 0:
