@@ -2,8 +2,6 @@ import gym
 from gym import spaces
 import pandas as pd
 import numpy as np
-import random
-from dqnp import DQNAgent, ReplayBuffer, Transition, epsilon_by_frame, epsilon_decay, epsilon_final, epsilon_start
 import logging
 import torch
 
@@ -48,7 +46,7 @@ class TireOptimizationEnv(gym.Env):
             reward -= 5 * num_critical_tires
             self.actions_taken.append("No action")
 
-        if action == 1:
+        elif action == 1:
             min_steer_idx = np.argmin([steer_left, steer_right])
             max_other_idx = np.argmax(other_tires)
             min_steer_value = min(steer_left, steer_right)
@@ -101,7 +99,7 @@ def save_model(model, filename):
 def main():
     data = pd.read_csv('data/rf_training/final_data.csv')
     env = TireOptimizationEnv(data)
-    for episode in range(len(data)//100):
+    for episode in range(5):
         state = env.reset()
         done = False
         while not done:
