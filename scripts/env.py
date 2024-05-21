@@ -40,7 +40,8 @@ class TruckFleetEnv(gym.Env):
 
         if action_type == 0:  # Replace tire
             if self.state[truck_idx][tire_idx] < self.health_threshold:
-                self.state[truck_idx][tire_idx] = np.random.rand()
+                # self.state[truck_idx][tire_idx] = np.random.rand()
+                self.state[truck_idx][tire_idx] = 1
                 self.action_log[truck_idx].append(f"Replaced tire {tire_idx}")
             else:
                 invalid_action = True
