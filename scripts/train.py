@@ -1,9 +1,12 @@
 import os
+import shutil
 import torch
 import pandas as pd
 import numpy as np
 from env import TruckFleetEnv
 from dqn_agent import DQNAgent
+
+from datetime import datetime
 
 # Disable OpenMP parallelism
 os.environ['OMP_NUM_THREADS'] = '1'
@@ -15,6 +18,15 @@ os.environ['OPENBLAS_NUM_THREADS'] = '1'
 # Set PyTorch to use single-threaded execution
 torch.set_num_threads(1)
 torch.set_num_interop_threads(1)
+
+# Create a new logs folder by date and time
+current_date = datetime.now().strftime('%Y-%m-%d')
+current_time = datetime.now().strftime('%H-%M-%S')
+logs_folder = f'logs/{current_date}/{current_time}'
+
+if os.path.exists('logs'):
+    shutil.rmtree('logs')
+os.makedirs(logs_folder)
 
 # Training loop
 num_episodes = 1000
@@ -74,7 +86,7 @@ for episode in range(num_episodes):
         'Number of Actions': [len(action_logs[i]) for i in range(env.num_trucks)],
         'Actions': [action_logs[i] for i in range(env.num_trucks)]
     })
-    episode_df.to_excel(f'logs/episode_{episode}_log.xlsx', index=False)
+    episode_df.to_excel(os.path.join(logs_folder, f'episode_{episode}_log.xlsx'), index=False)
 
 # Save the trained model
 torch.save(agent.policy_net.state_dict(), 'models/dqn_truck_fleet.pth')
