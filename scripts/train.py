@@ -8,6 +8,8 @@ from dqn_agent import DQNAgent
 
 from datetime import datetime
 
+from copy import deepcopy
+
 # Disable OpenMP parallelism
 os.environ['OMP_NUM_THREADS'] = '1'
 os.environ['MKL_NUM_THREADS'] = '1'
@@ -41,7 +43,7 @@ agent = DQNAgent(state_dim=env.num_trucks * env.num_tires_per_truck, action_dims
 all_action_logs = []
 
 for episode in range(num_episodes):
-    initial_state = env.reset()
+    initial_state = deepcopy(env.reset())
     state = initial_state.flatten()
     total_reward = 0
 
@@ -66,12 +68,13 @@ for episode in range(num_episodes):
 
     print(f"Episode {episode} - Total reward: {total_reward}")
     action_logs = env.get_action_log()
+    final_state = deepcopy(env.state)
 
     # Log details for this episode
     episode_log = {
         'Episode': episode,
         'Initial State': initial_state,
-        'Final State': env.state,
+        'Final State': final_state,
         'Total Reward': total_reward,
         'Action Logs': action_logs,
         'Number of Actions': [len(log) for log in action_logs]
@@ -82,7 +85,7 @@ for episode in range(num_episodes):
     episode_df = pd.DataFrame({
         'Truck': [f'Truck {i}' for i in range(env.num_trucks)],
         'Initial State': [initial_state[i] for i in range(env.num_trucks)],
-        'Final State': [env.state[i] for i in range(env.num_trucks)],
+        'Final State': [final_state[i] for i in range(env.num_trucks)],
         'Number of Actions': [len(action_logs[i]) for i in range(env.num_trucks)],
         'Actions': [action_logs[i] for i in range(env.num_trucks)]
     })
