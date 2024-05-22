@@ -2,7 +2,8 @@ import os
 import torch
 import pandas as pd
 import numpy as np
-from env import TruckFleetEnv
+# from env import TruckFleetEnv
+from env_v2 import TruckFleetEnv
 # from dqn_agent import DQNAgent
 from dqn_agent import DQNAgent
 
