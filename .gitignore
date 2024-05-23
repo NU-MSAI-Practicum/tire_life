@@ -177,8 +177,11 @@ pyrightconfig.json
 
 #ignore logs folder
 /logs/
+app/v2/logs/
 
 #DS_store
 *.DS_Store/
+
+
 
 # End of https://www.toptal.com/developers/gitignore/api/python,jupyter
