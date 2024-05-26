@@ -19,7 +19,7 @@ class TruckFleetEnv(gym.Env):
         # self.action_space = spaces.MultiDiscrete([3, num_trucks, num_tires_per_truck, max(num_tires_per_truck, num_trucks)])
 
         # Action space: (action_type, truck_idx, tire_idx, other_truck_idx, other_tire_idx)
-        self.action_space = spaces.MultiDiscrete([2, num_trucks, num_tires_per_truck, num_trucks, num_tires_per_truck])
+        self.action_space = spaces.MultiDiscrete([2, num_trucks, num_tires_per_truck, num_trucks, num_tires_per_truck - 2])
 
         self.observation_space = spaces.Box(
             low=0, high=1, shape=(num_trucks, num_tires_per_truck), dtype=np.float32
@@ -58,7 +58,7 @@ class TruckFleetEnv(gym.Env):
             else:
                 invalid_action = True
                 self.action_log[truck_idx].append(f"Invalid tried to replace healthy tire {tire_idx} on truck {truck_idx}")
-                reward -= 10
+                reward -= 100
         # elif action_type == 1:  # Swap within truck
         #     swap_idx = other_tire_idx
         #     if tire_idx < 2 and swap_idx >= 2 and self.state[truck_idx][tire_idx] < self.state[truck_idx][swap_idx]:
@@ -80,17 +80,17 @@ class TruckFleetEnv(gym.Env):
                     invalid_action = True
                     self.state[truck_idx][tire_idx], self.state[truck_idx][swap_idx] = self.state[truck_idx][swap_idx], self.state[truck_idx][tire_idx]
                     self.action_log[truck_idx].append(f"Invalid swap of tire {tire_idx} with tire {swap_idx} within truck {truck_idx}")
-                    reward -= 10
+                    reward -= 500
             else:  # Swap between different trucks
-                if tire_idx < 2 and other_tire_idx >= 2 and self.state[truck_idx][tire_idx] < self.state[other_truck_idx][other_tire_idx]:
-                    self.state[truck_idx][tire_idx], self.state[other_truck_idx][other_tire_idx] = self.state[other_truck_idx][other_tire_idx], self.state[truck_idx][tire_idx]
-                    self.action_log[truck_idx].append(f"Swapped steer tire {tire_idx} on truck {truck_idx} with non-steer tire {other_tire_idx} on truck {other_truck_idx}")
+                if tire_idx < 2 and swap_idx >= 2 and self.state[truck_idx][tire_idx] < self.state[other_truck_idx][swap_idx]:
+                    self.state[truck_idx][tire_idx], self.state[other_truck_idx][swap_idx] = self.state[other_truck_idx][swap_idx], self.state[truck_idx][tire_idx]
+                    self.action_log[truck_idx].append(f"Swapped steer tire {tire_idx} on truck {truck_idx} with non-steer tire {swap_idx} on truck {other_truck_idx}")
                     reward += 10
                 else:
                     invalid_action = True
-                    self.state[truck_idx][tire_idx], self.state[other_truck_idx][other_tire_idx] = self.state[other_truck_idx][other_tire_idx], self.state[truck_idx][tire_idx]
-                    self.action_log[truck_idx].append(f"Invalid swap of tire {tire_idx} with tire {other_tire_idx} between trucks {truck_idx} and {other_truck_idx}")
-                    reward -= 10
+                    self.state[truck_idx][tire_idx], self.state[other_truck_idx][swap_idx] = self.state[other_truck_idx][swap_idx], self.state[truck_idx][tire_idx]
+                    self.action_log[truck_idx].append(f"Invalid swap of tire {tire_idx} with tire {swap_idx} between trucks {truck_idx} and {other_truck_idx}")
+                    reward -= 500
 
 
         self.current_step += 1
@@ -98,7 +98,7 @@ class TruckFleetEnv(gym.Env):
        #rewards for achieving/moving towards goal
         self.optimal_state_achieved = self.is_optimal_state()
         if self.optimal_state_achieved == True:
-            reward += 1000
+            reward += 10000
         # else:
         #     steer_positions = self.state[:, :2]
         #     other_positions = self.state[:, 2:]

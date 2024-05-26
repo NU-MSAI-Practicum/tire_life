@@ -17,7 +17,7 @@ def train(logs_folder):
 
     # Training loop - 1
     num_episodes = 5000  # Increased number of episodes
-    epsilon_start = 1.0  # Higher starting epsilon for more exploration
+    epsilon_start = 0.7  # Higher starting epsilon for more exploration
     epsilon_end = 0.01  # Slightly higher ending epsilon to maintain exploration
     epsilon_decay = 200  # Slower decay rate
 
@@ -27,7 +27,7 @@ def train(logs_folder):
     max_steps=200
 
     env = TruckFleetEnv(num_trucks,num_tires_per_truck,health_threshold,max_steps)
-    agent = DQNAgent(state_dim=env.num_trucks * env.num_tires_per_truck, action_dims=[2, env.num_trucks, env.num_tires_per_truck, env.num_trucks, env.num_tires_per_truck])
+    agent = DQNAgent(state_dim=env.num_trucks * env.num_tires_per_truck, action_dims=[2, env.num_trucks, env.num_tires_per_truck, env.num_trucks, env.num_tires_per_truck - 2])
 
     # To store the action logs for all episodes
     all_action_logs = []
