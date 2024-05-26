@@ -2,8 +2,8 @@ import os
 import torch
 import pandas as pd
 import numpy as np
-from env import TruckFleetEnv
-from dueling_dqn import DQNAgent
+from agent.env import TruckFleetEnv
+from agent.dqn.dueling_dqn import DQNAgent
 from copy import deepcopy
 
 def train(logs_folder):

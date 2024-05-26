@@ -1,10 +1,8 @@
+# main.py
 import os
-import shutil
 import torch
 from datetime import datetime
-from train import *
-# from train_dueling_dqn import *
-
+from agent.train.double_dqn import *
 
 # Disable OpenMP parallelism
 os.environ['OMP_NUM_THREADS'] = '1'
@@ -17,19 +15,22 @@ os.environ['OPENBLAS_NUM_THREADS'] = '1'
 torch.set_num_threads(1)
 torch.set_num_interop_threads(1)
 
-
 def main():
-    # Create a new logs folder by date and time
+    # Create new logs folder by date and time
     current_date = datetime.now().strftime('%Y-%m-%d')
     current_time = datetime.now().strftime('%H-%M-%S')
-    logs_folder = f'logs/{current_date}/{current_time}'
+    
+    experiment_folder = 'experiments'
+    date_folder = os.path.join(experiment_folder, current_date)
+    time_folder = os.path.join(date_folder, current_time)
+    
+    logs_folder = os.path.join(time_folder, 'logs')
+    metrics_folder = os.path.join(time_folder, 'metrics')
 
-    if os.path.exists('logs'):
-        shutil.rmtree('logs')
-    os.makedirs(logs_folder)
+    os.makedirs(logs_folder, exist_ok=True)
+    os.makedirs(metrics_folder, exist_ok=True)
 
-    train(logs_folder)
-
+    train(logs_folder, metrics_folder)
 
 if __name__ == "__main__":
     main()

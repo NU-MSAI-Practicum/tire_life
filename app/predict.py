@@ -1,8 +1,8 @@
 import torch
 import numpy as np
 import os
-from env import TruckFleetEnv  # Adjusted import
-from dqn import DQNAgent  # Adjusted import
+from app.agent.env import TruckFleetEnv  # Adjusted import
+from agents.dqn.dqn_agents.dqn import DQNAgent  # Adjusted import
 import pandas as pd
 from copy import deepcopy
 
