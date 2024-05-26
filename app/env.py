@@ -50,7 +50,7 @@ class TruckFleetEnv(gym.Env):
         reward = 0
 
         if self.optimal_state_achieved:
-            reward -= 1000
+            reward -= 5
             self.current_step += 1
             done = self.current_step >= self.max_steps
             return self.state, reward, done, {}
@@ -60,10 +60,11 @@ class TruckFleetEnv(gym.Env):
             if self.state[truck_idx][tire_idx] <= self.health_threshold:
                 self.state[truck_idx][tire_idx] = 1
                 self.action_log[truck_idx].append(f"Valid Replace: Truck {truck_idx} / Tire {tire_idx}")
-                # reward += 100
+                # reward += 10
             else:
                 self.action_log[truck_idx].append(f"Invalid Replace: Truck {truck_idx} / Tire {tire_idx}")
-                reward -= 1000
+                # self.state[truck_idx][tire_idx] = 1
+                reward -= 10
         elif action_type == 1:  # Swap tires
             truck_idx, tire_idx, other_truck_idx, other_tire_idx = action[1], action[2], action[3], action[4]
             swap_idx = other_tire_idx
@@ -73,18 +74,18 @@ class TruckFleetEnv(gym.Env):
                     self.action_log[truck_idx].append(f"Valid Swap: Truck {truck_idx} - Tire {tire_idx} / Tire {swap_idx}")
                     # reward += 100
                 else:
-                    self.state[truck_idx][tire_idx], self.state[truck_idx][swap_idx] = self.state[truck_idx][swap_idx], self.state[truck_idx][tire_idx]
+                    # self.state[truck_idx][tire_idx], self.state[truck_idx][swap_idx] = self.state[truck_idx][swap_idx], self.state[truck_idx][tire_idx]
                     self.action_log[truck_idx].append(f"Invalid Swap: Truck {truck_idx} - Tire {tire_idx} / Tire {swap_idx}")
-                    reward -= 30
+                    reward -= 10
             else:  # Swap between different trucks
                 if tire_idx < 2 and swap_idx >= 2 and self.state[truck_idx][tire_idx] < self.state[other_truck_idx][swap_idx]:
                     self.state[truck_idx][tire_idx], self.state[other_truck_idx][swap_idx] = self.state[other_truck_idx][swap_idx], self.state[truck_idx][tire_idx]
                     self.action_log[truck_idx].append(f"Valid Swap: Truck {truck_idx} - Tire {tire_idx} / Truck {other_truck_idx} - Tire {swap_idx}")
                     # reward += 100
                 else:
-                    self.state[truck_idx][tire_idx], self.state[other_truck_idx][swap_idx] = self.state[other_truck_idx][swap_idx], self.state[truck_idx][tire_idx]
+                    # self.state[truck_idx][tire_idx], self.state[other_truck_idx][swap_idx] = self.state[other_truck_idx][swap_idx], self.state[truck_idx][tire_idx]
                     self.action_log[truck_idx].append(f"Invalid Swap: Truck {truck_idx} - Tire {tire_idx} / Truck {other_truck_idx} - Tire {swap_idx}")
-                    reward -= 30
+                    reward -= 10
 
 
         self.current_step += 1
@@ -92,20 +93,20 @@ class TruckFleetEnv(gym.Env):
        #rewards for achieving/moving towards goal
         self.optimal_state_achieved = self.is_optimal_state()
         if self.optimal_state_achieved == True:
-            reward += 10000
-        else:
-            steer_positions = self.state[:, :2]
-            other_positions = self.state[:, 2:]
+            reward += 1
+        # else:
+        #     steer_positions = self.state[:, :2]
+        #     other_positions = self.state[:, 2:]
 
-            for i in range(self.num_trucks):
-                for steer_tire in steer_positions[i]:
-                    if any(steer_tire > other_tire for other_tire in other_positions[i]):
-                        reward += 1
+        #     for i in range(self.num_trucks):
+        #         for steer_tire in steer_positions[i]:
+        #             if any(steer_tire > other_tire for other_tire in other_positions[i]):
+        #                 reward += 10
 
-            for i in range(self.num_trucks):
-                for j in range(self.num_tires_per_truck):
-                    if self.state[i][j] <= self.health_threshold:
-                        reward -= 1
+            # for i in range(self.num_trucks):
+            #     for j in range(self.num_tires_per_truck):
+            #         if self.state[i][j] <= self.health_threshold:
+            #             reward -= 10
                         
         done = self.optimal_state_achieved or self.current_step >= self.max_steps
 
@@ -124,7 +125,7 @@ class TruckFleetEnv(gym.Env):
             if not all_steers_healthier:
                 break
 
-        return np.all(self.state >= self.health_threshold) and all_steers_healthier
+        return np.all(self.state > self.health_threshold) and all_steers_healthier
 
     def render(self, mode='human'):
         print(self.state)

@@ -1,3 +1,5 @@
+# double_dqn.py
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -84,7 +86,7 @@ class DQNAgent:
 
     def optimize_model(self):
         if len(self.memory) < self.batch_size:
-            return
+            return None
 
         batch = self.memory.sample(self.batch_size)
         state_batch, action_batch, next_state_batch, reward_batch = zip(*batch)
@@ -121,6 +123,8 @@ class DQNAgent:
         loss.backward()
         self.optimizer.step()
     
+        return loss.item()
+
     def action_to_index(self, actions):
         indices = []
         for action in actions:
