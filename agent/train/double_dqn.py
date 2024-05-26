@@ -5,12 +5,12 @@ import torch
 import pandas as pd
 import numpy as np
 from datetime import datetime
-from agent.env import TruckFleetEnv
-from agent.dqn.double_dqn import DQNAgent
+from env import TruckFleetEnv
+from dqn.double_dqn import DQNAgent
 from copy import deepcopy
-from agent.utils import plot_rewards, plot_losses, plot_optimal_state_achievements
+from utils import plot_rewards, plot_losses, plot_optimal_state_achievements
 
-def train(logs_folder, metrics_folder):
+def train(logs_folder, metrics_folder,model_folder):
     num_episodes = 5000
     epsilon_start = 1.0
     epsilon_end = 0.05
@@ -101,5 +101,5 @@ def train(logs_folder, metrics_folder):
     plot_losses(losses, os.path.join(metrics_folder, 'losses_plot.png'))
     plot_optimal_state_achievements(optimal_state_achievements, os.path.join(metrics_folder, 'optimal_state_achievements_plot.png'))
 
-    torch.save(agent.policy_net.state_dict(), os.path.join(metrics_folder, 'dqn_truck_fleet.pth'))
+    torch.save(agent.policy_net.state_dict(), os.path.join(model_folder, 'dqn_truck_fleet.pth'))
     print("Training completed and model saved.")

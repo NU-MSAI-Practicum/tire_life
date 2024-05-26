@@ -1,5 +1,4 @@
 # utils.py
-import os
 import matplotlib.pyplot as plt
 
 def plot_rewards(rewards, filename):
