@@ -1,15 +1,8 @@
 import os
 import shutil
 import torch
-import pandas as pd
-import numpy as np
-from env import TruckFleetEnv
-from dqn_v2 import DQNAgent
 from datetime import datetime
-from copy import deepcopy
-import matplotlib.pyplot as plt
-from trainv0 import *
-# from trainv1 import *
+from train import *
 
 
 # Disable OpenMP parallelism
