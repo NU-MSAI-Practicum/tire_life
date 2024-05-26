@@ -5,92 +5,50 @@ import random
 from collections import deque
 import numpy as np
 
-# Dueling DQN network
-class DuelingDQN(nn.Module):
+# DQN network
+class DQN(nn.Module):
     def __init__(self, input_dim, output_dim):
-        super(DuelingDQN, self).__init__()
-        self.fc1 = nn.Linear(input_dim, 256)
-        self.fc2 = nn.Linear(256, 256)
-        
-        # Dueling streams
-        self.value_stream = nn.Sequential(
-            nn.Linear(256, 128),
-            nn.ReLU(),
-            nn.Linear(128, 1)
-        )
-        self.advantage_stream = nn.Sequential(
-            nn.Linear(256, 128),
-            nn.ReLU(),
-            nn.Linear(128, output_dim)
-        )
+        super(DQN, self).__init__()
+        self.fc1 = nn.Linear(input_dim, 256)  # Increased the number of neurons
+        self.fc2 = nn.Linear(256, 256)        # Increased the number of neurons
+        self.fc3 = nn.Linear(256, 128)        # Added an extra layer
+        self.fc4 = nn.Linear(128, 128)        # Added an extra layer
+        self.fc5 = nn.Linear(128, output_dim) # Final output layer
 
     def forward(self, x):
         x = torch.relu(self.fc1(x))
         x = torch.relu(self.fc2(x))
+        x = torch.relu(self.fc3(x))
+        x = torch.relu(self.fc4(x))
+        x = self.fc5(x)
+        return x
 
-        value = self.value_stream(x)
-        advantage = self.advantage_stream(x)
-
-        # Ensure the advantage mean calculation is on the correct dimension
-        q_values = value + (advantage - advantage.mean(dim=1, keepdim=True))
-        return q_values
-
-# Prioritized Replay Memory
-class PrioritizedReplayMemory:
-    def __init__(self, capacity, alpha=0.6):
-        self.capacity = capacity
-        self.alpha = alpha
+# Replay memory
+class ReplayMemory:
+    def __init__(self, capacity):
         self.memory = deque(maxlen=capacity)
-        self.priorities = deque(maxlen=capacity)
 
     def push(self, state, action, next_state, reward):
-        max_priority = max(self.priorities, default=1.0)
         self.memory.append((state, action, next_state, reward))
-        self.priorities.append(max_priority)
 
-    def sample(self, batch_size, beta=0.4):
-        if len(self.memory) == 0:
-            return [], [], []
-
-        priorities = np.array(self.priorities)
-        if len(priorities) != len(self.memory):
-            priorities = priorities[:len(self.memory)]
-
-        probabilities = priorities ** self.alpha
-        probabilities /= probabilities.sum()
-
-        indices = np.random.choice(len(self.memory), batch_size, p=probabilities)
-        samples = [self.memory[idx] for idx in indices]
-
-        total = len(self.memory)
-        weights = (total * probabilities[indices]) ** (-beta)
-        weights /= weights.max()
-        weights = torch.FloatTensor(weights)
-
-        return samples, weights, indices
-
-    def update_priorities(self, indices, priorities):
-        for idx, priority in zip(indices, priorities):
-            self.priorities[idx] = priority
+    def sample(self, batch_size):
+        return random.sample(self.memory, batch_size)
 
     def __len__(self):
         return len(self.memory)
 
-# DQN Agent
+# DQN agent
 class DQNAgent:
-    def __init__(self, state_dim, action_dims, gamma=0.99, lr=0.001, batch_size=64, memory_capacity=10000, alpha=0.6, beta_start=0.4, beta_frames=10000):
+    def __init__(self, state_dim, action_dims, gamma=0.99, lr=0.001, batch_size=64, memory_capacity=10000):
         self.state_dim = state_dim
         self.action_dims = action_dims
         self.gamma = gamma
         self.batch_size = batch_size
-        self.beta_start = beta_start
-        self.beta_frames = beta_frames
-        self.beta = beta_start
 
-        self.policy_net = DuelingDQN(state_dim, self.calculate_output_dim(action_dims))
-        self.target_net = DuelingDQN(state_dim, self.calculate_output_dim(action_dims))
+        self.policy_net = DQN(state_dim, self.calculate_output_dim(action_dims))
+        self.target_net = DQN(state_dim, self.calculate_output_dim(action_dims))
         self.optimizer = optim.Adam(self.policy_net.parameters(), lr=lr)
-        self.memory = PrioritizedReplayMemory(memory_capacity, alpha)
+        self.memory = ReplayMemory(memory_capacity)
 
         self.target_net.load_state_dict(self.policy_net.state_dict())
         self.target_net.eval()
@@ -112,8 +70,7 @@ class DQNAgent:
                 return np.concatenate(([action_type], swap_action))
         else:
             with torch.no_grad():
-                state = torch.FloatTensor(state).unsqueeze(0)  # Ensure state is 2D
-                q_values = self.policy_net(state)
+                q_values = self.policy_net(torch.FloatTensor(state))
                 action_index = torch.argmax(q_values).item()
                 if action_index < np.prod(self.action_dims["replace"]):
                     action_type = 0
@@ -125,22 +82,16 @@ class DQNAgent:
                     swap_action = np.unravel_index(swap_index, self.action_dims["swap"])
                     return np.concatenate(([action_type], swap_action))
 
-    def optimize_model(self, frame_idx):
+    def optimize_model(self):
         if len(self.memory) < self.batch_size:
             return
 
-        beta = min(1.0, self.beta_start + frame_idx * (1.0 - self.beta_start) / self.beta_frames)
-        batch, weights, indices = self.memory.sample(self.batch_size, beta)
-
-        if not batch:  # Skip if batch is empty
-            return
-
+        batch = self.memory.sample(self.batch_size)
         state_batch, action_batch, next_state_batch, reward_batch = zip(*batch)
 
         state_batch = torch.FloatTensor(np.array(state_batch))
         next_state_batch = torch.FloatTensor(np.array(next_state_batch))
         reward_batch = torch.FloatTensor(reward_batch)
-        weights = torch.FloatTensor(weights)
 
         # Convert actions to indices and handle different action types
         action_indices = []
@@ -158,15 +109,13 @@ class DQNAgent:
         current_q_values = self.policy_net(state_batch).view(-1, self.calculate_output_dim(self.action_dims))
         current_q_values = current_q_values.gather(1, action_indices.view(-1, 1)).squeeze()
 
+        # Double DQN update
         with torch.no_grad():
             next_state_actions = self.policy_net(next_state_batch).view(-1, self.calculate_output_dim(self.action_dims)).argmax(1)
             max_next_q_values = self.target_net(next_state_batch).view(-1, self.calculate_output_dim(self.action_dims)).gather(1, next_state_actions.view(-1, 1)).squeeze()
             expected_q_values = reward_batch + self.gamma * max_next_q_values
 
-        td_errors = (current_q_values - expected_q_values).abs().detach().numpy()
-        self.memory.update_priorities(indices, td_errors + 1e-5)
-
-        loss = (weights * nn.MSELoss(reduction='none')(current_q_values, expected_q_values)).mean()
+        loss = nn.MSELoss()(current_q_values, expected_q_values)
 
         self.optimizer.zero_grad()
         loss.backward()

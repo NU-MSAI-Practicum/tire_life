@@ -3,33 +3,22 @@ import torch
 import pandas as pd
 import numpy as np
 from env import TruckFleetEnv
-# # from dqn import DQNAgent
-from double_dqn import DQNAgent
+from dueling_dqn import DQNAgent
 from copy import deepcopy
 
-
 def train(logs_folder):
+    # Training loop
+    num_episodes = 5000  # Increased number of episodes
+    epsilon_start = 1.0  # Higher starting epsilon for more exploration
+    epsilon_end = 0.01  # Slightly higher ending epsilon to maintain exploration
+    epsilon_decay = 200  # Slower decay rate
 
-    # # Training loop - 0
-    # num_episodes = 1000
-    # epsilon_start = 0.5
-    # epsilon_end = 0.001
-    # epsilon_decay = 10
+    num_trucks = 2
+    num_tires_per_truck = 10
+    health_threshold = 0.09
+    max_steps = 200
 
-    # Training loop - 1
-    num_episodes = 10000  # Further increase the number of episodes
-    epsilon_start = 1.0
-    epsilon_end = 0.05  # Adjust the final epsilon for a better balance between exploration and exploitation
-    epsilon_decay = 500  # Fine-tune the decay rate for epsilon
-
-    num_trucks=2
-    num_tires_per_truck=10
-    health_threshold=0.09
-    max_steps=500
-
-    env = TruckFleetEnv(num_trucks,num_tires_per_truck,health_threshold,max_steps)
-    # agent = DQNAgent(state_dim=env.num_trucks * env.num_tires_per_truck, action_dims=[2, env.num_trucks, env.num_tires_per_truck, env.num_trucks, env.num_tires_per_truck - 2])
-
+    env = TruckFleetEnv(num_trucks, num_tires_per_truck, health_threshold, max_steps)
     agent = DQNAgent(
         state_dim=env.num_trucks * env.num_tires_per_truck,
         action_dims={
@@ -41,13 +30,14 @@ def train(logs_folder):
     # To store the action logs for all episodes
     all_action_logs = []
 
+    frame_idx = 0
     for episode in range(num_episodes):
         initial_state = deepcopy(env.reset())
         state = initial_state.flatten()
         total_reward = 0
 
-        for t in range(100):  # Limit number of steps per episode
-            epsilon = epsilon_end + (epsilon_start - epsilon_end) * np.exp(-1. * episode / epsilon_decay)
+        for t in range(max_steps):  # Limit number of steps per episode
+            epsilon = epsilon_end + (epsilon_start - epsilon_end) * np.exp(-1. * frame_idx / epsilon_decay)
             action = agent.select_action(state, epsilon)
             next_state, reward, done, _ = env.step(action)
             next_state = next_state.flatten()
@@ -56,7 +46,8 @@ def train(logs_folder):
             state = next_state
             total_reward += reward
 
-            agent.optimize_model()
+            agent.optimize_model(frame_idx)
+            frame_idx += 1
 
             if done:
                 # print(f"Episode {episode} finished after {t+1} timesteps with total reward {total_reward}")
@@ -65,7 +56,7 @@ def train(logs_folder):
         if episode % 10 == 0:
             agent.update_target_net()
 
-        print(f"Episode {episode} - Total reward: {total_reward} - TimeStep {t+1}")
+        print(f"Episode {episode} - Time Step: {t+1} - Total reward: {total_reward}")
         action_logs = env.get_action_log()
         final_state = deepcopy(env.state)
 
