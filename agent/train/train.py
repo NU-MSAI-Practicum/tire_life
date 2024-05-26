@@ -5,7 +5,7 @@ import torch
 import pandas as pd
 import numpy as np
 from env import TruckFleetEnv
-from dqn.double_dqn import DQNAgent
+from dqn.dqn_v2 import DQNAgent
 from copy import deepcopy
 from utils import plot_rewards, plot_losses
 
@@ -71,6 +71,7 @@ def train(logs_folder, metrics_folder, model_folder):
 
             if done:
                 break
+
 
         episode_data.append([episode, t + 1, total_reward])  # Collect episode-timestep-reward data
 

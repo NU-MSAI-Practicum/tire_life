@@ -177,7 +177,7 @@ pyrightconfig.json
 
 #ignore logs folder
 /logs/
-/agent/experiments/
+/experiments/
 
 #DS_store
 *.DS_Store/

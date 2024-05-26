@@ -2,7 +2,7 @@
 import os
 import torch
 from datetime import datetime
-from train.double_dqn import *
+from train.train_dueling import *
 
 # Disable OpenMP parallelism
 os.environ['OMP_NUM_THREADS'] = '1'
@@ -20,7 +20,7 @@ def main():
     current_date = datetime.now().strftime('%Y-%m-%d')
     current_time = datetime.now().strftime('%H-%M-%S')
     
-    experiment_folder = './agent/experiments'
+    experiment_folder = './experiments'
     date_folder = os.path.join(experiment_folder, current_date)
     time_folder = os.path.join(date_folder, current_time)
     

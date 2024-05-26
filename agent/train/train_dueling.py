@@ -5,7 +5,7 @@ import torch
 import pandas as pd
 import numpy as np
 from env import TruckFleetEnv
-from dqn.double_dqn import DQNAgent
+from dqn.dueling_dqn import DQNAgent
 from copy import deepcopy
 from utils import plot_rewards, plot_losses
 
@@ -54,6 +54,7 @@ def train(logs_folder, metrics_folder, model_folder):
         total_reward = 0
         episode_losses = []
 
+        # Inside train function in train.py
         for t in range(max_steps):
             epsilon = epsilon_end + (epsilon_start - epsilon_end) * np.exp(-episode / epsilon_decay)
             action = agent.select_action(state, epsilon)
@@ -61,7 +62,7 @@ def train(logs_folder, metrics_folder, model_folder):
             next_state = next_state.flatten()
             next_state = torch.tensor(next_state, dtype=torch.float32).to(device)
 
-            agent.memory.push(state.cpu(), action, next_state.cpu(), reward)
+            agent.memory.push(state.cpu(), action, next_state.cpu(), reward, done)
             state = next_state
             total_reward += reward
 
@@ -71,6 +72,8 @@ def train(logs_folder, metrics_folder, model_folder):
 
             if done:
                 break
+
+
 
         episode_data.append([episode, t + 1, total_reward])  # Collect episode-timestep-reward data
 

@@ -1,5 +1,3 @@
-# dqn/double_dqn.py
-
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -11,16 +9,20 @@ class DQN(nn.Module):
     def __init__(self, input_dim, output_dim):
         super(DQN, self).__init__()
         self.fc1 = nn.Linear(input_dim, 256)
+        self.bn1 = nn.BatchNorm1d(256)
         self.fc2 = nn.Linear(256, 256)
+        self.bn2 = nn.BatchNorm1d(256)
         self.fc3 = nn.Linear(256, 128)
+        self.bn3 = nn.BatchNorm1d(128)
         self.fc4 = nn.Linear(128, 128)
+        self.bn4 = nn.BatchNorm1d(128)
         self.fc5 = nn.Linear(128, output_dim)
 
     def forward(self, x):
-        x = torch.relu(self.fc1(x))
-        x = torch.relu(self.fc2(x))
-        x = torch.relu(self.fc3(x))
-        x = torch.relu(self.fc4(x))
+        x = torch.relu(self.bn1(self.fc1(x)))
+        x = torch.relu(self.bn2(self.fc2(x)))
+        x = torch.relu(self.bn3(self.fc3(x)))
+        x = torch.relu(self.bn4(self.fc4(x)))
         x = self.fc5(x)
         return x
 
@@ -53,6 +55,10 @@ class DQNAgent:
         self.target_net.load_state_dict(self.policy_net.state_dict())
         self.target_net.eval()
 
+        self.epsilon = 1.0
+        self.epsilon_decay = 0.995
+        self.epsilon_min = 0.01
+
     def calculate_output_dim(self, action_dims):
         replace_actions = np.prod(action_dims["replace"])
         swap_actions = np.prod(action_dims["swap"])
@@ -69,18 +75,24 @@ class DQNAgent:
                 swap_action = np.array([random.randrange(dim) for dim in self.action_dims["swap"]])
                 return np.concatenate(([action_type], swap_action))
         else:
+            self.policy_net.eval()  # Set the network to evaluation mode
             with torch.no_grad():
+                if state.dim() == 1:
+                    state = state.unsqueeze(0)  # Add batch dimension
                 q_values = self.policy_net(state)
-                action_index = torch.argmax(q_values).item()
-                if action_index < np.prod(self.action_dims["replace"]):
-                    action_type = 0
-                    replace_action = np.unravel_index(action_index, self.action_dims["replace"])
-                    return np.concatenate(([action_type], replace_action))
-                else:
-                    action_type = 1
-                    swap_index = action_index - np.prod(self.action_dims["replace"])
-                    swap_action = np.unravel_index(swap_index, self.action_dims["swap"])
-                    return np.concatenate(([action_type], swap_action))
+            self.policy_net.train()  # Set the network back to training mode
+            action_index = torch.argmax(q_values).item()
+            if action_index < np.prod(self.action_dims["replace"]):
+                action_type = 0
+                replace_action = np.unravel_index(action_index, self.action_dims["replace"])
+                return np.concatenate(([action_type], replace_action))
+            else:
+                action_type = 1
+                swap_index = action_index - np.prod(self.action_dims["replace"])
+                swap_action = np.unravel_index(swap_index, self.action_dims["swap"])
+                return np.concatenate(([action_type], swap_action))
+
+
 
     def optimize_model(self):
         if len(self.memory) < self.batch_size:
@@ -113,11 +125,14 @@ class DQNAgent:
             max_next_q_values = self.target_net(next_state_batch).view(-1, self.calculate_output_dim(self.action_dims)).gather(1, next_state_actions.view(-1, 1)).squeeze()
             expected_q_values = reward_batch + self.gamma * max_next_q_values
 
-        loss = nn.MSELoss()(current_q_values, expected_q_values)
+        loss = nn.SmoothL1Loss()(current_q_values, expected_q_values)
 
         self.optimizer.zero_grad()
         loss.backward()
+        torch.nn.utils.clip_grad_norm_(self.policy_net.parameters(), max_norm=1.0)
         self.optimizer.step()
+
+        self.epsilon = max(self.epsilon_min, self.epsilon * self.epsilon_decay)
 
         return loss.item()
 
