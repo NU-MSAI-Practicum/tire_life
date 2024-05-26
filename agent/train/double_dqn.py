@@ -11,7 +11,7 @@ from copy import deepcopy
 from utils import plot_rewards, plot_losses, plot_optimal_state_achievements
 
 def train(logs_folder, metrics_folder,model_folder):
-    num_episodes = 5000
+    num_episodes = 100
     epsilon_start = 1.0
     epsilon_end = 0.05
     epsilon_decay = 2000

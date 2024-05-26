@@ -33,5 +33,7 @@ def main():
 
     train(logs_folder, metrics_folder,model_folder)
 
+    print("All details are stored in: ", time_folder)
+
 if __name__ == "__main__":
     main()
