@@ -1,8 +1,8 @@
 import torch
 import numpy as np
 import os
-from .env import TruckFleetEnv  # Adjusted import
-from .dqn_agent import DQNAgent  # Adjusted import
+from app.agent.env import TruckFleetEnv  # Adjusted import
+from agents.dqn.dqn_agents.dqn import DQNAgent  # Adjusted import
 import pandas as pd
 from copy import deepcopy
 
@@ -16,8 +16,14 @@ os.environ['OPENBLAS_NUM_THREADS'] = '1'
 
 class Predictor:
     def __init__(self, model_path):
-        self.env = TruckFleetEnv(mean=0.5, std=0.1)
-        self.agent = DQNAgent(state_dim=self.env.num_trucks * self.env.num_tires_per_truck, action_dims=[3, self.env.num_trucks, self.env.num_tires_per_truck, self.env.num_tires_per_truck])
+        
+        # self.env = TruckFleetEnv(mean=0.5, std=0.1)
+        num_trucks=2
+        num_tires_per_truck=10
+        health_threshold=0.09
+        max_steps=200
+        self.env = TruckFleetEnv(num_trucks,num_tires_per_truck,health_threshold,max_steps)
+        self.agent = DQNAgent(state_dim=self.env.num_trucks * self.env.num_tires_per_truck, action_dims=[2, self.env.num_trucks, self.env.num_tires_per_truck, self.env.num_trucks, self.env.num_tires_per_truck])
         self.agent.policy_net.load_state_dict(torch.load(model_path))
         self.agent.policy_net.eval()
 

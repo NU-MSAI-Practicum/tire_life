@@ -4,7 +4,7 @@ from fastapi.templating import Jinja2Templates
 from typing import List
 import numpy as np
 import pandas as pd
-from .predict import Predictor
+from predict import Predictor
 
 app = FastAPI()
 templates = Jinja2Templates(directory="app/templates")
