@@ -2,7 +2,7 @@
 import os
 import torch
 from datetime import datetime
-from train.train_dueling import *
+from train.train_v2 import *
 
 # Disable OpenMP parallelism
 os.environ['OMP_NUM_THREADS'] = '1'

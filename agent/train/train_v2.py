@@ -10,19 +10,19 @@ from copy import deepcopy
 from utils import plot_rewards, plot_losses
 
 def train(logs_folder, metrics_folder, model_folder):
-    num_episodes = 10000
+    num_episodes = 25000
     epsilon_start = 1.0
     epsilon_end = 0.001
-    epsilon_decay = 2000
+    epsilon_decay = 3000
     gamma = 0.1
     lr = 0.0005
     batch_size = 128
-    memory_capacity = 100000
+    memory_capacity = 500000
 
     num_trucks = 2
     num_tires_per_truck = 10
     health_threshold = 0.09
-    max_steps = 200
+    max_steps = 20
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
@@ -79,7 +79,7 @@ def train(logs_folder, metrics_folder, model_folder):
         with open(csv_file_path, mode='a') as f:
             f.write(f"{episode},{t + 1},{total_reward}\n")
 
-        if episode % 5 == 0:
+        if episode % 10 == 0:
             agent.update_target_net()
 
         print(f"Episode {episode} - Total reward: {total_reward} - TimeStep {t + 1}")
