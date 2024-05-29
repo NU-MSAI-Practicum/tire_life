@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/styles.css') }}">
+    <link rel="icon" href="{{ url_for('static', path='/icons/favicon.ico') }}" type="image/x-icon">
+</head>
+<body>
+    <nav>
+        <ul>
+            <li><a href="{{ url_for('get_index') }}"><img src="{{ url_for('static', path='/icons/home.svg') }}" alt="Home" class="icon">Home</a></li>
+            <li><a href="{{ url_for('get_about') }}"><img src="{{ url_for('static', path='/icons/info.svg') }}" alt="About" class="icon">About</a></li>
+            <li><a href="{{ url_for('get_contact') }}"><img src="{{ url_for('static', path='/icons/contact.svg') }}" alt="Contact" class="icon">Contact</a></li>
+            <li><a href="{{ url_for('get_faqs') }}"><img src="{{ url_for('static', path='/icons/faq.svg') }}" alt="FAQs" class="icon">FAQs</a></li>
+        </ul>
+    </nav>
+    <div class="container">
+        {% block content %}
+        {% endblock %}
+    </div>
+</body>
+</html>

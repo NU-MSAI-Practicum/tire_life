@@ -2,8 +2,8 @@ import os
 import torch
 import pandas as pd
 import numpy as np
-from env import TruckFleetEnv
-from dqn import DQNAgent
+from .env import TruckFleetEnv
+from .dqn import DQNAgent
 from copy import deepcopy
 from utils import plot_optimal_states, plot_valid_actions
 

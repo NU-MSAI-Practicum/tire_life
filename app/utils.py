@@ -1,4 +1,18 @@
+import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
+
+def process_excel(df, num_trucks, num_tires_per_truck):
+    expected_size = num_trucks * num_tires_per_truck
+    actual_size = df.size
+    if actual_size != expected_size:
+        raise ValueError(f"Excel file size ({actual_size}) does not match the expected size ({expected_size}) for {num_trucks} trucks and {num_tires_per_truck} tires per truck.")
+    initial_state = df.to_numpy().reshape(num_trucks, num_tires_per_truck)
+    return initial_state
+
+def generate_initial_state(num_trucks, num_tires_per_truck):
+    # Generates a random initial state
+    return np.round(np.random.rand(num_trucks, num_tires_per_truck), 2)
 
 def plot_rewards(rewards, filename):
     plt.figure(figsize=(10, 5))
