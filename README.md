@@ -53,6 +53,8 @@ To run this project, you need Python 3.x installed along with the required packa
 
 ```bash
 pip install -r requirements.txt
+```
+
 
 ## Docker Setup
 
