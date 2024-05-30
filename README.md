@@ -129,7 +129,7 @@ This plot illustrates the percentage of optimal states achieved in blocks of 100
 
 This plot shows the percentage of valid actions taken per episode throughout the training process. A valid action is any action that adheres to the defined rules and constraints of the environment.
 
-![Valid Actions](./valid_actions_plot.png)
+![Valid Actions](./agent/metrics/valid_actions_plot.png)
 
 ## Summary / Next Steps
 
