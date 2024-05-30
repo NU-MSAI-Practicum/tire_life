@@ -25,7 +25,7 @@ To develop a proof of concept demonstrating the use of Reinforcement Learning (R
 - Implementing an RL policy using Deep Q-Networks (DQN) to handle complex action spaces and real-time decision-making.
 - Evaluating the performance of the RL agent in achieving optimal states across the fleet.
 
-![Solution Design](./Solution Architecture.png)
+![Solution Design](./SolutionArchitecture.png)
 
 ## Project Structure
 
