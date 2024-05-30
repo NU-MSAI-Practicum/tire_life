@@ -88,6 +88,7 @@ To train the DQN agent, run the `train.py` script:
 
 ```bash
 python train.py
+```
 
 ### Running the Simulation
 
@@ -95,6 +96,7 @@ To run the simulation and evaluate the trained model, use the `main.py` script:
 
 ```bash
 python main.py
+```
 
 ### Making Predictions
 
@@ -102,6 +104,7 @@ To make predictions using the trained model, use the `predict.py` script:
 
 ```bash
 python predict.py
+```
 
 
 ### Testing Predictions
@@ -110,6 +113,7 @@ To run unit tests for the prediction script, use the `test_predict.py` script:
 
 ```bash
 python test_predict.py
+```
 
 ### Visualizing Results
 
