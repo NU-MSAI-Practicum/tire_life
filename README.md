@@ -123,7 +123,7 @@ The results can be visualized using the provided plots:
 
 This plot illustrates the percentage of optimal states achieved in blocks of 100 episodes over the training period. An optimal state is defined as a state where the maintenance actions result in the highest possible RCP for the truck tires.
 
-![Optimal States](./optimal_states_plot.png)
+![Optimal States](./agent/metrics/optimal_states_plot.png)
 
 #### Valid Actions Per Episode Over Time
 
