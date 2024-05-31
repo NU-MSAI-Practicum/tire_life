@@ -91,11 +91,11 @@
     <div class="container">
         <h1>Truck Fleet Prediction Result</h1>
         <div class="result">
-            <h2>Initial State:</h2>
+            <h2>Initial Tire RCP values</h2>
             <pre>{{ initial_state }}</pre>
-            <h2>Final State:</h2>
+            <h2>Final Tire RCP values</h2>
             <pre>{{ final_state }}</pre>
-            <h2>Action Log:</h2>
+            <h2>Actions taken</h2>
             {% for truck in log_data %}
             <div class="actions-box">
                 <h3>Truck {{ loop.index }}</h3>

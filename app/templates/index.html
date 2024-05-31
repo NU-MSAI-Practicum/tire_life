@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Truck Fleet Prediction</title>
+    <title>Truck Tire Management System</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -64,7 +64,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>Truck Fleet Prediction</h1>
+        <h1>Truck Tire Management System</h1>
         <form id="truckForm" method="post" action="/predict">
             <div class="form-group">
                 <label for="num_trucks">Number of Trucks:</label>
@@ -81,7 +81,7 @@
             tiresDiv.innerHTML = '';
             for (let i = 0; i < numTrucks; i++) {
                 const label = document.createElement('label');
-                label.innerText = `Tire values for Truck ${i + 1} (comma-separated):`;
+                label.innerText = `Tire RCP values for Truck ${i + 1} (comma-separated):`;
                 label.classList.add("form-group");
                 const input = document.createElement('input');
                 input.type = 'text';
