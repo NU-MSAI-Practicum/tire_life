@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Truck Fleet Prediction</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            overflow: auto;
+        }
+        .container {
+            background-color: #fff;
+            padding: 2em;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+            margin: 20px;
+        }
+        h1 {
+            margin-top: 0;
+            margin-bottom: 1em;
+            color: #333;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.5em;
+            color: #555;
+        }
+        input[type="text"],
+        input[type="number"] {
+            width: 100%;
+            padding: 0.8em;
+            margin-bottom: 1em;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        input[type="submit"] {
+            padding: 0.8em 1.2em;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        input[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+        .form-group {
+            margin-bottom: 1.5em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Truck Fleet Prediction</h1>
+        <form id="truckForm" method="post" action="/predict">
+            <div class="form-group">
+                <label for="num_trucks">Number of Trucks:</label>
+                <input type="number" id="num_trucks" name="num_trucks" min="1" max="10" required>
+            </div>
+            <div id="tires"></div>
+            <input type="submit" value="Predict">
+        </form>
+    </div>
+    <script>
+        document.getElementById('num_trucks').addEventListener('input', function() {
+            const numTrucks = this.value;
+            const tiresDiv = document.getElementById('tires');
+            tiresDiv.innerHTML = '';
+            for (let i = 0; i < numTrucks; i++) {
+                const label = document.createElement('label');
+                label.innerText = `Tire values for Truck ${i + 1} (comma-separated):`;
+                label.classList.add("form-group");
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.name = 'tires';
+                input.required = true;
+                input.classList.add("form-group");
+                tiresDiv.appendChild(label);
+                tiresDiv.appendChild(input);
+            }
+        });
+    </script>
+</body>
+</html>
