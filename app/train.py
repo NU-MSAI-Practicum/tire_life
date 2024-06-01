@@ -15,7 +15,7 @@ def train(logs_folder, metrics_folder, model_folder):
     gamma = 0.1
     lr = 0.0005
     batch_size = 128
-    memory_capacity = 500000
+    memory_capacity = 10000
 
     num_trucks = 2
     num_tires_per_truck = 10

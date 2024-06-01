@@ -1,8 +1,8 @@
 import os
 import torch
 import numpy as np
-from .env import TruckFleetEnv
-from .dqn import DQNAgent
+from env import TruckFleetEnv
+from dqn import DQNAgent
 
 def predict_and_save(logs_folder, model_path, num_trucks, num_tires_per_truck, health_threshold, max_steps, num_steps, initial_state, output_file, detailed_log_file):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
